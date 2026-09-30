@@ -1,13 +1,13 @@
-
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import joblib
 import pandas as pd
 import os
 
 app = FastAPI(
-    title="Log Failure Prediction API",
-    description="ML-based log failure prediction system",
+    title="Log Failure Prediction System",
+    description="ML-based log analysis and failure prediction",
     version="1.0"
 )
 
@@ -52,9 +52,17 @@ class LogFeatures(BaseModel):
     E29: int
 
 
-@app.get("/")
-def home():
-    return {"message": "Log Failure Prediction API is running"}
+@app.get("/", response_class=HTMLResponse)
+def dashboard():
+
+    template_path = os.path.join(
+        os.path.dirname(__file__),
+        "templates",
+        "index.html"
+    )
+
+    with open(template_path, "r", encoding="utf-8") as file:
+        return file.read()
 
 
 @app.post("/predict")
@@ -71,15 +79,23 @@ def predict(data: LogFeatures):
 
     columns = [f"E{i}" for i in range(1, 30)]
 
-    features = pd.DataFrame(values, columns=columns)
+    features = pd.DataFrame(
+        values,
+        columns=columns
+    )
 
     prediction = model.predict(features)[0]
+
     probability = model.predict_proba(features)[0]
 
     result = "SUCCESS" if prediction == 0 else "FAIL"
 
     return {
         "prediction": result,
-        "success_probability": round(float(probability[0]) * 100, 2),
-        "failure_probability": round(float(probability[1]) * 100, 2)
+        "success_probability": round(
+            float(probability[0]) * 100, 2
+        ),
+        "failure_probability": round(
+            float(probability[1]) * 100, 2
+        )
     }
