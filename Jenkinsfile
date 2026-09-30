@@ -28,11 +28,11 @@ pipeline {
             }
         }
 
-        stage('Wait for API') {
-            steps {
-                bat 'timeout /t 10 /nobreak'
-            }
-        }
+        	stage('Wait for API') {
+                     steps {
+                         bat 'ping 127.0.0.1 -n 11 > nul'
+                     }
+                 }
 
         stage('Test API') {
             steps {
