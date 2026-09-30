@@ -28,9 +28,15 @@ pipeline {
             }
         }
 
+        stage('Wait for API') {
+            steps {
+                bat 'timeout /t 10 /nobreak'
+            }
+        }
+
         stage('Test API') {
             steps {
-                bat 'curl http://localhost:8000'
+                bat 'curl --fail http://localhost:8000'
             }
         }
     }
